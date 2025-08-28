@@ -1,5 +1,5 @@
 <template>
-    <form class="form">
+    <form class="form" @submit.prevent="onSubmit">
         <div class="form-header">
             <div class="form-logo">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -22,8 +22,8 @@
                     <input class="form-input" type="number" v-model="f_port" placeholder="8080" required/>
                 </div>
             </div>
-            <p class="form-alert">&nbsp;</p>
-            <button class="connect-bnt" type="submit">참가하기</button>
+            <p class="form-alert">{{ props.message }}</p>
+            <button class="connect-bnt" type="submit" @click="onSubmit()">참가하기</button>
         </div>
     </form>
 </template>
@@ -31,13 +31,34 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+const props = defineProps<{ message?: string }>()
+
+const emit = defineEmits<{
+    (e: 'submitForm', data: { name: string; host: string; port: number }): void
+    (e: 'update:message', message: string): void
+}>()
+
 const f_name = ref('')
 const f_host = ref('')
-const f_port = ref('')
+const f_port = ref<number | null>(null)
+//const message = ref('\u00A0')
+
+function onSubmit() {
+    if (f_port.value === null) {
+        emit('update:message', '포트를 올바르게 입력해주세요')
+        return
+    }
+    emit('submitForm', {
+        name: f_name.value,
+        host: f_host.value,
+        port: f_port.value
+    })
+}
 </script>
 
 <style scoped>
 .form {
+    background-color: var(--white);
     display: flex;
     flex-direction: column;
     position: absolute;
@@ -129,7 +150,7 @@ label {
     width: 100%;
     padding: 0.625rem;
     background-color: var(--main1);
-    color: white;
+    color: var(--white);
     border: none;
     border-radius: 0.375rem;
     font-weight: 450;
